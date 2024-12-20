@@ -26,11 +26,13 @@ class SpectraAnalysis:
         second_derivative = np.gradient(first_derivative, self.chem_shifts)
         third_derivative = np.gradient(second_derivative, self.chem_shifts)
         fourth_derivative = np.gradient(third_derivative, self.chem_shifts)
-
+        
+        #calculate minima below zero in 2nd derivative
         sign_change = np.diff(np.sign(third_derivative)) != 0
         peak_mask = (sum_of_spectra > threshold) & (second_derivative < 0) & (fourth_derivative > 0)
         peak_mask[1:] &= sign_change
 
+        #return list
         peak_pos = self.chem_shifts[peak_mask].tolist()
         return peak_pos
 
@@ -46,12 +48,15 @@ class SpectraAnalysis:
             norm_shift(Float): value by which chem_shift was shifted
 
         """    
+        #85th percentile as threshold
         peak_pos = self.peakfit_sum(threshold = 85)
         water = 4.7
+
+        #select peal closest to 4.7 and calculate shift
         closest_peak = min(peak_pos, key=lambda x: abs(x - water))
-        
         norm_shift = (4.7 - closest_peak)
 
+        #shift spectra
         data_normalized = pd.DataFrame(self.chem_shifts.copy() + norm_shift)
         data_normalized = pd.concat([data_normalized, self.data.iloc[:, 1:]], axis=1)
         data_normalized.columns = self.data.columns
@@ -82,7 +87,10 @@ class SpectraAnalysis:
         threshold = initial_threshold
 
         while None in found or len(other) <= len(found):
+            #search for peaks
             detected_peaks = self.peakfit_sum(threshold)
+
+            #match found peaks to expected peaks
             for peak in detected_peaks:
                 distances = [abs(peak - expected_peak) for expected_peak in reference_peaks]
                 min_distance = min(distances)
@@ -96,6 +104,7 @@ class SpectraAnalysis:
                 else:
                     other.append(peak)
 
+            #lower threshold 
             threshold -= 2
             if threshold < 0 or None not in found or len(other) > len(found):
                 break
@@ -105,8 +114,6 @@ class SpectraAnalysis:
             if peak is None:
                 found[i] = reference_peaks[i]  
 
-        #print("Found Peaks: ", found)
-        #print("Other Peaks: ", other)
 
         return found, other
 
@@ -130,7 +137,7 @@ class SpectraAnalysis:
         #normalize data
         df, norm_shift = self.normalize_water()
     
-        # Split into section with at least 20 columns each
+        # Split into section with at least 5 columns each
         cols_to_divide = len(df.columns)-1 #-1 because first column is chemical shift
         num_sections = max(cols_to_divide // min_cols_per_section, 1) if cols_to_divide > min_cols_per_section else 1
 
@@ -144,7 +151,6 @@ class SpectraAnalysis:
         for section in range(num_sections):
             extra = 1 if section < extra_cols else 0
             end_col = start_col + cols_per_section + extra
-            #sections.append(df.iloc[:, start_col:end_col])
             sections.append(df.iloc[:, [0] + list(range(start_col, end_col))]) #add column with chem_shift to each section
             start_col = end_col
             col_sect.extend([f"{section + 1}"] * (cols_per_section + extra)) #column entries for final dataframe
