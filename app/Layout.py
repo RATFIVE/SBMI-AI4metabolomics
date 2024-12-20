@@ -22,15 +22,15 @@ from panel5_reference_plot import Reference
 import time
 #from pynput.keyboard import Controller, Key
 
-
+# Set Page Configs
 st.set_page_config(layout="wide", page_title="SBMI - Application", page_icon=":shark:")
-# Custom CSS to change font size of buttons and other widgets
 
-meta_fp = os.path.join(os.getcwd(), '..', 'Data', 'Data_description_main.xlsx')
-data_fp = os.path.join(os.getcwd(), '..', 'Data', 'FA_20240517_2H_yeast_Nicotinamide-d4 _6.csv')
-# FA_20240207_2H_yeast_Fumarate-d2_5.csv
-# FA_20231122_2H_yeast_acetone-d6_3.csv
-reference_fp = os.path.join(os.getcwd(), '..', 'Data', 'FA_20240806_2H_yeast_Reference_standard_PBS.ser.csv')
+
+# meta_fp = os.path.join(os.getcwd(), '..', 'Data', 'Data_description_main.xlsx')
+# data_fp = os.path.join(os.getcwd(), '..', 'Data', 'FA_20240517_2H_yeast_Nicotinamide-d4 _6.csv')
+# # FA_20240207_2H_yeast_Fumarate-d2_5.csv
+# # FA_20231122_2H_yeast_acetone-d6_3.csv
+# reference_fp = os.path.join(os.getcwd(), '..', 'Data', 'FA_20240806_2H_yeast_Reference_standard_PBS.ser.csv')
 
 # Function to open a file dialog and get the file path
 def select_file(filetypes=[("CSV files", "*.csv"), ("All files", "*.*")]):
@@ -39,9 +39,9 @@ def select_file(filetypes=[("CSV files", "*.csv"), ("All files", "*.*")]):
     Returns:
         dir_path (str): directory path
     """
+    # Open Explorer to select a file
     root = Tk()
     file_path = filedialog.askopenfilename(filetypes=filetypes)
-    #dir_path = r'/Users/marco/Documents/UKSH/Data/Banzhaf_Marco_1996-09-03_B.MA._2/2024-04-11'
     root.destroy()
     if file_path == '':
         return None
@@ -131,7 +131,10 @@ class StreamlitApp():
             None
         """
 
+        # Headline
         st.markdown("""<h1 style="text-align: center;">SBMI - Application</h1>""", unsafe_allow_html=True)
+        
+        # Split Header to 3 columns, Column 2 is the main
         col1, col2, col3 = st.columns([0.2, 0.8, 0.2])
         with col1:
             st.divider()
@@ -155,7 +158,7 @@ class StreamlitApp():
                 st.session_state['Model 1'] = False  # Store the class in session state
                 st.session_state['Model 2'] = True
 
-
+            # Subcol for File selection output
             sub_col1, sub_col2 = st.columns([0.30, 0.70])
 
             # Select the Metadata as xml
@@ -174,7 +177,7 @@ class StreamlitApp():
                     self.data_fp = select_file(filetypes=[("CSV files", "*.csv"), ("All files", "*.*")])
                     st.session_state["file_name"] = self.data_fp
 
-            # Select the Reference file as 
+            # Select the Reference file as csv
             with sub_col1:
                 st.markdown('**Step3: Select the Reference File as .csv**')
                 select_reference_button = st.button(label='Select Reference')
@@ -214,6 +217,7 @@ class StreamlitApp():
             else:
                 st.warning("No reference file selected or key does not exist.")
 
+        # Start Process Text and Button
         with col2:
             process_col1, process_col2, process_col3 = st.columns([2, 1, 1])  # 1:2:1 ratio
         with process_col1:
@@ -262,6 +266,7 @@ class StreamlitApp():
             None
         """
 
+        # When Start Process is clicked, then start the panel functions
         with main:
             st.markdown("#### Main Page Content")
             if st.session_state.get("processing_started", True): # Set to false if it should open after pressing the button
@@ -310,6 +315,7 @@ class StreamlitApp():
         processor.save_kinetics()
     
     def process_plots(self):
+        """Get Classes into the session state"""
         st.session_state['panel_1_obj'] = Panel1SpectrumPlot(file_path = self.data_fp)
         st.session_state['panel_2_obj'] = KineticPlot(self.data_fp)
         st.session_state['panel_3_obj'] = ContourPlot(self.data_fp)
