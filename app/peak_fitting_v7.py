@@ -1,13 +1,6 @@
-'''
-This model is an improvement of model 5. 
-Only the first the fittings are done. On the consecutive fittings the previous fitting parameters are used as initial guess.
-'''
-
-
 import pandas as pd
 import os
 import numpy as np
-# fitting library
 from scipy.optimize import curve_fit
 from copy import deepcopy
 from tqdm import tqdm
@@ -15,6 +8,9 @@ from peakpos_df import SpectraAnalysis
 import streamlit as st
 
 class PeakFitting:
+    '''
+    This class fits the prespecified spectrum in the metadata. A prefitting is done using peakpos_df.py.
+    '''
     def __init__(self, fp_file, fp_meta):
         #st.write('Using v7')
         # file paths
@@ -38,7 +34,6 @@ class PeakFitting:
 
         # positions and corresponding names of the peaks
         self.positions, self.names = self.extract_ppm_all()
-        print('meins', self.positions)
         self.number_peaks = len(self.positions)
         self.number_substances = len(set(self.names))
 
@@ -56,7 +51,7 @@ class PeakFitting:
         self.names_substances =  deepcopy(self.names) + list(dict.fromkeys(self.names)) + list(dict.fromkeys(self.names)) # Not a relevant instance attribute, so putting somewhere else?
         
 
-        # Meikes code
+        # prefitting
         fix_pos = SpectraAnalysis(self.df, self.positions)
         self.positions = fix_pos.peak_df()['Found Peaks']
 
@@ -104,7 +99,19 @@ class PeakFitting:
     def make_bounds(self, positions_fine = None,
                     y_shift = (0,np.inf),
                     shift_bounds_fine = (- 0.1, 0.1), width_bounds_fine = (0, 3e-1), amplitude_bounds_fine = (0, np.inf)):
-        
+        """
+        Make the bounds for the fitting.
+
+        Args:
+            positions_fine: list of positions for fine tuning
+            y_shift: tuple, lower and upper bound for the y_shift
+            shift_bounds_fine: tuple, lower and upper bound for the shift in fine tuning
+            width_bounds_fine: tuple, lower and upper bound for the width in fine tuning
+            amplitude_bounds_fine: tuple, lower and upper bound for the amplitude in fine tuning
+
+        Returns:
+            numpy array: numpy array of the lower and upper bounds
+        """
         y_shift_lower_bound = np.array([y_shift[0]])
         y_shift_upper_bound = np.array([y_shift[1]])
         shift_lower_bounds_fine = np.array(positions_fine) + shift_bounds_fine[0]
@@ -155,6 +162,15 @@ class PeakFitting:
             np.concatenate([np.array([error[0]]), error[1:self.number_peaks+1], widths_final_error, amplitudes_final_error])
 
     def fit(self, save_csv = True):
+        """
+        Fit the data with the grey spectrum. The fitting parameters and errors are saved as csv files.
+
+        Args:
+            save_csv: bool, if True, the results are saved as csv files
+        
+        Returns:
+            fitting_params: dataframe of the fitting parameters if save_csv is False
+        """
         progress_bar = st.empty()
         load_bar = progress_bar.progress(0)
         first_fit = True
@@ -204,19 +220,32 @@ class PeakFitting:
 
     
     def lorentzian(self, x, shift, gamma, A):
-        '''
-        x is the datapoint
-        x0 is the peak position
-        gamma is the width
-        A is the amplitude
+        ''' 
+        Lorentzian function
+
+        Args:
+            x: values to evaluate the function
+            shift: shift parameter
+            gamma: gamma parameter
+            A: amplitude parameter
+
+        Returns: 
+            y:  calaculated values of the lorentzian function for x
+
         '''
         return A * gamma / ((x - shift)**2 + gamma**2)
 
     # this has high potential for being wrong 
     def grey_spectrum(self, x, *params):
         '''
-        x is the independent variable array
-        params should be a flattened list of shift, gamma, and A values
+        This method calculates the sum of lorentz function with shared widths and amplitudes.
+
+        Args:
+            x: values to evaluate the function
+            params: list of parameters, first element is the y_shift, second element is the shift parameter, the next n elements are the gamma values, and the last n elements are the A values
+
+        Returns:
+            y: calculated values of the sum of the lorentzian functions
         '''
         shift = params[0]            # Single shift parameter
         gamma = params[1:self.number_substances+1]        # Extract n gamma values
@@ -237,14 +266,23 @@ class PeakFitting:
         return y
     
     def write_results(self):
+        '''
+        Save the fitting parameters and errors as csv files.
+        '''
         self.fitting_params.to_csv(self.output_direc + 'fitting_params.csv')
         self.fitting_params_error.to_csv(self.output_direc + 'fitting_params_error.csv')
 
     # this has high potential for being wrong
     def grey_spectrum_fine_tune(self, x, *params):
         '''
-        x is the independent variable array
-        params should be a flattened list of x0, gamma, and A values
+        This method calculates the sum of lorentz function with shared widths and amplitudes.
+
+        Args:
+            x: values to evaluate the function
+            params: list of parameters, first element is the y_shift, second element is the shift parameter, the next n elements are the gamma values, and the last n elements are the A values
+
+        Returns:
+            y: calculated values of the sum of the lorentzian functions
         '''
         y_shift = params[0]
         x0 = params[1:self.number_peaks+1]
@@ -261,11 +299,3 @@ class PeakFitting:
             if k < self.number_substances:
                 y += self.lorentzian(x, x0[i], gamma[k], A[k]) + y_shift
         return y
-
-# FA_20240207_2H_yeast_Fumarate-d2_5.csv
-#input_file = '../Data/FA_20240213_2H_yeast_Fumarate-d2_9.csv'
-#meta_file =  '/home/tom-ruge/Schreibtisch/Fachhochschule/Semester_2/Appl_Project_MOIN_CC/MoinCC-AI4metabolomics/Data/Data_description_main.xlsx'
-###
-#pf = PeakFitting(input_file, meta_file)
-#pf.fit()
-# Error Handling: Are filepathe existing?
