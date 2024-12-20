@@ -7,27 +7,21 @@ import streamlit as st
 
 
 
-#loaddata = LoadData()
-
-#df_list = loaddata.load_data_list('FA_20231123_2H Yeast_Fumarate-d2_12 .csv')
-#df = pd.read_csv(df_list[0])
-#print(df)
-
-
-
-#example_image_path = str(Path(r'/Users/marco/Documents/MoinCC-AI4metabolomics/app/example/FA_20240205_2H_yeast _Gluc-d2_5.csv_time_dependence.png'))
-
-
-#fig3 = p3cp.ContourPlot(df=df)
-#fig3 = fig3.plot()
-
-
 
 def main():
-    #st.session_state.clear()
-   # st.rerun()
-    app = Layout.StreamlitApp()#fig2=example_image_path,
-                              #fig3=fig3)
+    """
+    Main function to initialize and run the Streamlit app.
+
+    This function creates an instance of the `StreamlitApp` class from the `Layout` module, which is responsible for setting up the layout and user interface of the application. After the instance is created, the `run` method is called to start the application.
+
+    Args:
+        None
+
+    Returns:
+        None
+    """
+
+    app = Layout.StreamlitApp()
     app.run()
 
 
