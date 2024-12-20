@@ -8,6 +8,39 @@ import numpy as np
 
 
 class Reference():
+    """
+    A class to handle reference spectrum fitting and kinetics calculations based on provided reference data and metadata.
+
+    Attributes:
+        data (pandas.DataFrame): DataFrame containing the reference data (chemical shifts and spectra).
+        chem_shifts (pandas.Series): Series of chemical shifts from the reference data.
+        LorentzianFit (peak_fitting_v6.PeakFitting): Peak fitting object for Lorentzian fitting.
+        fitting_params (pandas.DataFrame): Fitted parameters for Lorentzian model.
+        reference_value (float): Factor to calculate concentration in mmol from integral values.
+        file_name_ref (str): Base name of the reference file.
+        plot_dir (Path): Directory path for saving plots.
+        reference_pdf (Path): Path for saving reference plot as PDF.
+        file_name (str): Base name of the data file.
+        output_dir (Path): Directory for output files.
+        kin_fp (Path): Path to the kinetics CSV file.
+        kin_df (pandas.DataFrame): DataFrame containing kinetics data.
+
+    Methods:
+        __init__(fp_ref, fp_meta, fp_data):
+            Initializes the Reference object by loading reference data, metadata, and kinetics data.
+        
+        ReferenceValue():
+            Calculates and returns the reference value (factor to convert integral value to concentration in mmol).
+        
+        plot(i):
+            Creates a plot for the given time step index `i`, showing water peak integrals and the Lorentzian fit.
+        
+        save_fig(fig, name, width=1200, height=800):
+            Saves the figure as both PDF and PNG formats with specified dimensions.
+
+        save_kinetics_mmol():
+            Saves the kinetics data converted to mmol based on the reference value.
+    """
     def __init__(self, fp_ref, fp_meta, fp_data):
         self.data = pd.read_csv(fp_ref)
         self.chem_shifts = self.data.iloc[:,0]
@@ -28,12 +61,14 @@ class Reference():
         os.makedirs(self.plot_dir, exist_ok=True)
     
     def ReferenceValue(self):
-        """ne
+        """
+        Calculates and returns the reference value used to convert integral values to concentrations in mmol.
 
         Returns:
-            reference_value: factor to calculate concentration in mmol from integral value
+            float: The reference value for concentration calculation.
         """
-        #get reference concentration from meta data
+
+        # get reference concentration from meta data
         mmol = re.findall(r'[0-9\.]+', self.LorentzianFit.meta_df.iloc[0]['Substrate_mM_added'])
         mmol = float(mmol[0])
 
@@ -49,17 +84,18 @@ class Reference():
  
     
     def plot(self, i):
-        """_summary_
+        """
+        Generates a plot for the specified time step index `i`, showing both the water peak integral and the Lorentzian fit.
 
         Args:
-            i (_type_): _description_
+            i (int): The index of the time step to plot.
 
         Returns:
-            _type_: _description_
+            matplotlib.figure.Figure: The generated plot figure.
         """
         spectra_data = self.data.iloc[:,i+1]
 
-
+        # make two plots next to each other
         fig, ax = plt.subplots(1, 2, figsize=(10, 4))
 
         # amplitude
@@ -80,7 +116,7 @@ class Reference():
         #axs[0].legend()
 
         # Second plot
-        #actual curve
+        # actual curve
         ax[1].plot(self.chem_shifts, spectra_data, c='blue', label='Reference spectrum')
         
         # Lorentzian
@@ -104,22 +140,25 @@ class Reference():
         return fig  
     
     def save_fig(self, fig, name, width=1200, height=800):
-        """_summary_
+        """
+        Saves the generated plot figure in PDF and PNG formats with specified dimensions.
 
         Args:
-            fig (_type_): _description_
-            name (_type_): _description_
-            width (int, optional): _description_. Defaults to 1200.
-            height (int, optional): _description_. Defaults to 800.
+            fig (matplotlib.figure.Figure): The figure to save.
+            name (str): The base name for the saved file.
+            width (int, optional): The width of the saved figure in pixels. Defaults to 1200.
+            height (int, optional): The height of the saved figure in pixels. Defaults to 800.
         """
         
-        #Konvertieren der Breite und Höhe von Pixel in Zoll (dpi = 300)
+        # Configure Fig size
         fig.set_size_inches(width / 100, height / 100)
-        fig.savefig(f'{name}.pdf', format='pdf')
-        fig.savefig(f'{name}.png', format='png')
+        fig.savefig(f'{name}.pdf', format='pdf') # Save as PDF
+        fig.savefig(f'{name}.png', format='png') # Save as PNG
 
     def save_kinetics_mmol(self):
-        """_summary_
+        """
+        Saves the kinetics data converted to mmol based on the reference value.
+        The converted data is saved as 'kinetics_mmol.csv' in the output directory.
         """
         kin_mmol = self.kin_df.copy().set_index('Time_Step') 
         value_col = ['ReacSubs','Metab1','Water'] 
