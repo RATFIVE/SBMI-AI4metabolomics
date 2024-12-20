@@ -113,8 +113,6 @@ class Reference():
                        ha='right', 
                        va='top')
 
-        #axs[0].legend()
-
         # Second plot
         # actual curve
         ax[1].plot(self.chem_shifts, spectra_data, c='blue', label='Reference spectrum')

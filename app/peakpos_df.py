@@ -3,6 +3,9 @@ import numpy as np
 
 
 class SpectraAnalysis:
+    """
+    A class to locate Peaks based on the second derivative previously to running the Lorentzian fit in Model 2
+    """
     def __init__(self, data, expected_peaks):
         self.data = data
         self.expected_peaks = expected_peaks
