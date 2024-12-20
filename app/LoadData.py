@@ -5,10 +5,6 @@ import math
 import numpy as np
 
 
-
-
-
-
 class LoadData:
     def __init__(self):
         """
@@ -39,10 +35,9 @@ class LoadData:
         """
         path_list = []
         cwd = Path(os.getcwd())
-        #print(f'Working Dir: {cwd}')
+
         data_path = os.path.join(cwd.parent, 'Data')
 
-        #print(f'Path: {data_path}')
         for root, dirs, files in os.walk(data_path):
             for file in files:
                 if file.endswith(endswith):

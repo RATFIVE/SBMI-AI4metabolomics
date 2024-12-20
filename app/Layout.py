@@ -87,15 +87,34 @@ class StreamlitApp():
         self.fig3 = fig3
         self.fig4 = fig4
 
-# /home/tom-ruge/Schreibtisch/Fachhochschule/Semester_2/Appl_Project_MOIN_CC/MoinCC-AI4metabolomics/Data/Data_description_main.xlsx
-# /home/tom-ruge/Schreibtisch/Fachhochschule/Semester_2/Appl_Project_MOIN_CC/MoinCC-AI4metabolomics/Data/FA_20240731_2H_yeast_Fumarate-d2_15_200.ser.csv
-
-# '/Users/marco/Documents/MoinCC-AI4metabolomics/Data/Data_description_main.xlsx'
-# '/Users/marco/Documents/MoinCC-AI4metabolomics/Data/FA_20240207_2H_yeast_Fumarate-d2_5.csv'
-
-
 
     def header(self):
+
+
+        """
+        Displays the header and sets up the user interface for the SBMI application.
+
+        This function creates a Streamlit-based user interface for selecting models, uploading required files, 
+        and processing data. It includes the following steps:
+        1. Displays the application header and layout columns.
+        2. Provides a selector for choosing between two models:
+        - Model 1: Lorentzian Fit
+        - Model 2: Lorentzian fit with prefitting
+        3. Implements buttons to upload metadata, spectrum, and reference files, 
+        storing their paths in the Streamlit session state.
+        4. Dynamically imports the appropriate model class based on the selected model.
+        5. Displays uploaded file information or warnings if no files are selected.
+        6. Provides a button to start processing data and visualizations using the selected model.
+        7. Splits the interface into two tabs: 'Main Page' and 'Instructions', 
+        where the main page dynamically displays content after processing starts.
+
+        Args:
+            None
+
+        Returns:
+            None
+        """
+
         st.markdown("""<h1 style="text-align: center;">SBMI - Application</h1>""", unsafe_allow_html=True)
         col1, col2, col3 = st.columns([0.2, 0.8, 0.2])
         with col1:
@@ -213,6 +232,20 @@ class StreamlitApp():
         self.about_page(about)
         
     def main_page(self, main):
+        """
+        Displays the main page content and analysis panels after data processing is started.
+
+        This function populates the 'Main Page' tab with dynamic content based on whether 
+        data processing has been initiated. If processing has started, it displays multiple 
+        analysis panels; otherwise, it prompts the user to start processing.
+
+        Args:
+            main (Streamlit Tab): The Streamlit tab object for the 'Main Page'.
+
+        Returns:
+            None
+        """
+
         with main:
             st.markdown("#### Main Page Content")
             if st.session_state.get("processing_started", True): # Set to false if it should open after pressing the button
@@ -221,28 +254,35 @@ class StreamlitApp():
                 self.panel3()  
                 self.panel4()
 
-                # Shutdown button
-                # exit_app = st.button("Shut Down")
-                # if exit_app:
-                #     Give a bit of delay for user experience
-                #     time.sleep(0.1)
-                #     Close streamlit browser tab
-                    
-                #     keyboard = Controller()
-                #     Simulate pressing and releasing "ctrl+w"
-                #     keyboard.press(Key.ctrl)
-                #     keyboard.press('w')
-                #     keyboard.release('w')
-                #     keyboard.release(Key.ctrl)
-
-                #     Terminate streamlit python process
-                #     pid = os.getpid()
-                #     p = psutil.Process(pid)
-                #     p.terminate()
             else:
                 st.info("Click 'Start Processing' to see the analysis panels.")
     
     def process_data(self, PeakFitting):
+        """
+        Processes the data and generates necessary plots for analysis panels.
+
+        The `process_data` function performs the following:
+        1. Executes peak fitting on the provided data and metadata using the `PeakFitting` class.
+        2. Prepares and saves processed data required for analysis panels:
+        - Sum spectra
+        - Substrate individual data
+        - Difference spectra
+        - Kinetics data
+
+        The `process_plots` function initializes objects for various analysis plots and stores them 
+        in the Streamlit session state for later use:
+        1. Panel 1: Spectrum plot
+        2. Panel 2: Kinetics plot
+        3. Panel 3: Contour plot
+        4. Panel 4: Reference plot, which includes saving kinetics data in mmol units.
+
+        Args:
+            PeakFitting (class): The class used for performing peak fitting on the data.
+
+        Returns:
+            None
+        """
+
         #perform peak fitting
         fitter = PeakFitting(self.data_fp, self.meta_fp)
         fitter.fit()
@@ -262,6 +302,12 @@ class StreamlitApp():
         st.session_state['panel_obj_4'].save_kinetics_mmol()
 
     def about_page(self, about):
+        """
+        Displays the "Instructions" section of the application in the "About" tab.
+
+        The `about_page` function provides detailed step-by-step guidance for using the application, including 
+        descriptions of the input files, their required formats, and the process workflow.
+        """
         with about:
             # Text which will be shown in the Instruction 
             st.markdown(f"""
@@ -339,6 +385,28 @@ class StreamlitApp():
 
     # -------- Panels with Expanders --------------------
     def panel1(self):
+        """
+    Displays Panel 1, which provides the Substrate Plot based on the fitted data.
+
+    The `panel1` function is responsible for:
+    1. Loading the fitting results from a predefined file path.
+    2. Displaying an interactive substrate plot where users can select frames via a slider.
+    3. Computing and displaying the standard deviation of noise for the selected frame.
+    4. Allowing users to save the plot as a PDF.
+
+    Key Features:
+    - **Data Loading:** Reads the summarized fit data (`sum_fit.csv`) from the output directory. If the file is not found, displays an error message prompting the user to start processing.
+    - **Interactive Plot:** Provides a slider to select the frame of interest and visualizes the substrate plot using `Plotly`.
+    - **Standard Deviation:** Computes and displays the noise standard deviation for the selected frame.
+    - **Save to PDF:** Offers a button to save the current plot as a PDF file.
+
+    Args:
+        None
+
+    Returns:
+        None
+    """
+
         # read in results from fitting
         try:
             sum_fit_fp = Path('output', f'{os.path.basename(self.data_fp)}_output', 'sum_fit.csv')
@@ -369,7 +437,25 @@ class StreamlitApp():
 
             
     def panel2(self):
-        """ Kinetic Plot"""
+        """
+        Displays Panel 2, which provides the Kinetic Plot visualization.
+
+        The `panel2` function is responsible for:
+        1. Rendering the kinetic plot that visualizes the time-dependent behavior of metabolites and substrates.
+        2. Providing an interactive interface for viewing the plot.
+        3. Allowing users to save the kinetic plot as a PDF file.
+
+        Key Features:
+        - **Interactive Plot:** Displays the kinetic plot using `Plotly` with full container width.
+        - **Save to PDF:** Includes a button to save the displayed kinetic plot as a PDF file, naming it based on the associated data file.
+
+        Args:
+            None
+
+        Returns:
+            None
+        """
+
         with st.expander("Panel 2 - Kinetic Plot", expanded=True):
             st.markdown('# Kinetic Plot')
             fig = st.session_state['panel_2_obj'].plot() 
@@ -385,7 +471,26 @@ class StreamlitApp():
                                 )
 
     def panel3(self):
-        """Contour Plot"""
+        """
+        Displays Panel 3, which provides the Contour Plot visualization.
+
+        The `panel3` function is responsible for:
+        1. Rendering an interactive contour plot that visualizes the measured spectrum.
+        2. Allowing users to adjust the plot's z-axis range dynamically using a slider.
+        3. Providing functionality to save the contour plot as a PDF file.
+
+        Key Features:
+        - **Interactive Contour Plot:** Displays the contour plot using the specified `zmin` and `zmax` values.
+        - **Dynamic Z-Axis Range Adjustment:** A range slider lets users set minimum (`zmin`) and maximum (`zmax`) values for better visualization.
+        - **Save to PDF:** Includes a button to save the contour plot as a PDF file, with a filename based on the data file and selected z-axis range.
+
+        Args:
+            None
+
+        Returns:
+            None
+        """
+
         with st.expander("Panel 3 - Contour Plot", expanded=True):
             st.markdown('# Contour Plot')
             # one range slider for both max and min
@@ -403,7 +508,26 @@ class StreamlitApp():
                                 )
 
     def panel4(self):
-        """Reference Plot"""
+        """
+        Displays Panel 4, which provides the Reference Plot visualization.
+
+        The `panel4` function is responsible for:
+        1. Rendering an interactive reference plot that displays data based on a user-selected frame.
+        2. Allowing users to adjust the selected frame dynamically using a slider.
+        3. Providing functionality to save the reference plot as a PDF file.
+
+        Key Features:
+        - **Interactive Reference Plot:** Displays the reference plot for a specific frame selected by the user.
+        - **Dynamic Frame Selection:** A slider enables users to choose the frame to visualize, ensuring flexible data exploration.
+        - **Save to PDF:** Includes a button to save the reference plot as a PDF file, with a filename based on the reference file and selected frame.
+
+        Args:
+            None
+
+        Returns:
+            None
+        """
+
         with st.expander("Panel 4 - Reference", expanded=True):
             st.markdown('# Reference')
             i = st.slider('Select the frame for water reference', min_value=1, max_value= st.session_state['panel_obj_4'].data.shape[1], value=1) #max_value ist falsch, sessionstate?
@@ -423,6 +547,26 @@ class StreamlitApp():
     # self.plot_dir = Path('output', self.file_name + '_output', 'plots')
     # self.reference_pdf = Path(self.plot_dir, f'Reference_{self.file_name}'
     def save_to_pdf(self, session_state, fig, file_basename, file_name):
+        """
+    Saves a given plot to a PDF file.
+
+    The `save_to_pdf` function ensures that the specified plot is saved as a PDF in the appropriate directory.
+
+    Key Features:
+    - **Directory Creation:** Automatically creates a directory for storing plots if it doesn't already exist.
+    - **Custom File Naming:** The saved PDF file name includes the provided `file_name` and `file_basename` for clarity.
+    - **Figure Saving:** Utilizes the `save_fig` method from the provided `session_state` object to handle figure saving.
+
+    Args:
+        session_state (object): The session state object containing the `save_fig` method for saving the plot.
+        fig (object): The figure to be saved as a PDF.
+        file_basename (str): The base name of the data file, used for naming the output directory and file.
+        file_name (str): The custom name for the PDF file.
+
+    Returns:
+        None
+    """
+
         
         plot_dir = Path('output', file_basename + '_output', 'plots')
         os.makedirs(plot_dir, exist_ok=True)
@@ -433,4 +577,16 @@ class StreamlitApp():
         
 
     def run(self):
+        """
+        Executes the main functionality of the program.
+
+        This method serves as the entry point for the execution flow. It starts by calling the `header` method, which is likely responsible for displaying or setting up the initial content or user interface.
+
+        Args:
+            None
+
+        Returns:
+            None
+        """
+
         self.header()
