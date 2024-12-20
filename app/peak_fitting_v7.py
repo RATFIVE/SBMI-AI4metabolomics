@@ -169,7 +169,6 @@ class PeakFitting:
                     p0 = [0] + list(self.positions[i]) + [0.1]*self.number_substances + [1000]*self.number_substances
                     flattened_bounds_fine = self.make_bounds(positions_fine = list(self.positions[i]))
                     first_fit = False
-                
 
                 # Fine tune the fit
                 popt, pcov = curve_fit(lambda x, *params: self.grey_spectrum_fine_tune(x, *params),

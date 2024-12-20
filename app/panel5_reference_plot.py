@@ -4,8 +4,7 @@ import re
 import peak_fitting_v6
 import os
 from pathlib import Path
-import plotly.io as pio
-
+import numpy as np
 
 
 class Reference():
@@ -43,7 +42,7 @@ class Reference():
         else:
             print("mMol value couldn't be extracted from Substrate_mM_added ")
 
-        #calculate ref_factor
+        # calculate ref_factor
         reference_value = mmol / self.fitting_params['Water_amp_4.7'].mean()
 
         return reference_value
@@ -64,13 +63,13 @@ class Reference():
         fig, ax = plt.subplots(1, 2, figsize=(10, 4))
 
         # amplitude
-        ax[0].plot(self.fitting_params['Water_amp_4.7'])
-        ax[0].axhline(y=self.fitting_params['Water_amp_4.7'].mean(), color='grey', linestyle='--')
+        ax[0].plot(self.fitting_params['Water_amp_4.7']*np.pi)
+        ax[0].axhline(y=(self.fitting_params['Water_amp_4.7']*np.pi).mean(), color='grey', linestyle='--')
         ax[0].set_title('Integral of water over time')
         ax[0].set_xlabel('Time step') 
         ax[0].set_ylabel('Integral value water peak')
         # annotation
-        ax[0].annotate(f'Calculated Convergence Factor = {self.reference_value:.3f}', 
+        ax[0].annotate(f'Calculated Convergence Factor = {self.reference_value/np.pi:.4f}', # match with integral
                        xy=(1.05, 0.85), xycoords='axes fraction', 
                        xytext=(-20, 20), 
                        textcoords='offset points',
@@ -101,11 +100,6 @@ class Reference():
         # global title
         fig.suptitle('Reference spectrum and Lorentzian fit of File: ' + self.file_name_ref)
         plt.tight_layout()
-
-        # Save the figure as a PDF
-        #self.save_fig(fig, self.reference_pdf)
-
-        
     
         return fig  
     

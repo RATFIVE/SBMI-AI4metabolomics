@@ -3,6 +3,7 @@ import plotly.express as px
 from pathlib import Path
 import os
 import plotly.io as pio
+import numpy as np
 
 class KineticPlot:
     def __init__(self, path):   
@@ -19,7 +20,7 @@ class KineticPlot:
     def plot(self):
         colors = self.colors[3:]
         fig = px.scatter(
-            self.kin_df,
+            self.kin_df * np.pi, # Multiply by pi to get the integral
             x='Time_Step',
             y=self.kin_df.columns[1:],  # Select all columns except 'time' for y
             labels={'value': 'Value', 'variable': 'Series'},
@@ -57,7 +58,6 @@ class KineticPlot:
         return fig
     
     def save_fig(self, fig, name):
-        
         pio.write_image(fig, f'{name}.pdf', format='pdf', engine='kaleido', width=1200, height=800)
         pio.write_image(fig, f'{name}.png', format='png', engine='kaleido', width=1200, height=800) 
         

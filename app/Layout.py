@@ -1,17 +1,10 @@
 import streamlit as st
-import numpy as np
 import pandas as pd
-import plotly.graph_objects as go
-import subprocess
 import os
-import sys
-import psutil  # For checking running processes
 from pathlib import Path
 from LoadData import *
 from panel3_contour_plot import *
-import matplotlib.pyplot as plt
 from Process4Panels import Process4Panels
-import plotly.express as px
 from tkinter import *
 from tkinter import filedialog
 from tkinter.filedialog import askopenfilename
@@ -19,22 +12,13 @@ from panel1_spectrum_plot import Panel1SpectrumPlot
 from panel2_kinetic_plot import KineticPlot
 from panel3_contour_plot import ContourPlot
 from panel5_reference_plot import Reference
-import time
-#from pynput.keyboard import Controller, Key
 
 # Set Page Configs
 st.set_page_config(layout="wide", page_title="SBMI - Application", page_icon=":shark:")
 
-
-# meta_fp = os.path.join(os.getcwd(), '..', 'Data', 'Data_description_main.xlsx')
-# data_fp = os.path.join(os.getcwd(), '..', 'Data', 'FA_20240517_2H_yeast_Nicotinamide-d4 _6.csv')
-# # FA_20240207_2H_yeast_Fumarate-d2_5.csv
-# # FA_20231122_2H_yeast_acetone-d6_3.csv
-# reference_fp = os.path.join(os.getcwd(), '..', 'Data', 'FA_20240806_2H_yeast_Reference_standard_PBS.ser.csv')
-
 # Function to open a file dialog and get the file path
 def select_file(filetypes=[("CSV files", "*.csv"), ("All files", "*.*")]):
-    """load data path
+    """Load data path from file dialog.
 
     Returns:
         dir_path (str): directory path
