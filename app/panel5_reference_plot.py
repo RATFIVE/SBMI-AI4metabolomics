@@ -69,7 +69,7 @@ class Reference():
         ax[0].set_xlabel('Time step') 
         ax[0].set_ylabel('Integral value water peak')
         # annotation
-        ax[0].annotate(f'Calculated Convergence Factor = {self.reference_value:.3f}', 
+        ax[0].annotate(f'Calculated Convergence Factor = {self.reference_value/np.pi:.4f}', # match with integral
                        xy=(1.05, 0.85), xycoords='axes fraction', 
                        xytext=(-20, 20), 
                        textcoords='offset points',
