@@ -22,11 +22,11 @@ To use git, please install it with following this [link](https://git-scm.com/dow
 1. Download this directory and put it into a place on your system where you like. You can download the directory using either git:
 
 ```bash
-git clone --depth 1 https://github.com/RATFIVE/MoinCC-AI4metabolomics.git
+git clone --depth 1 https://github.com/RATFIVE/SBMI-AI4metabolomics.git
 ```
 or download the directory from the github repository by  
 
-    1. open this link: https://github.com/RATFIVE/MoinCC-AI4metabolomics,
+    1. open this link: https://github.com/RATFIVE/SBMI-AI4metabolomics,
     2. press on the green code button and 
     3. 'Download ZIP'. Depending on your internet speed it will take a certain time because of past development code.
 
@@ -37,18 +37,18 @@ You can install all the libaries in a seperate python enviroment.
 
 ```bash
 
-cd path_of_your_download_dir\MoinCC-AI4metabolomics-main\app
+cd path_of_your_download_dir\SBMI-AI4metabolomics-main\app
 ```
 
 
 2. Create a Virtual Environment in the app dir:
 ```bash
-python -m venv .MoinCC
+python -m venv .SBMI
 ```
 
 3. Activate the Virtual Environment
 ```bash
-.MoinCC\Scripts\activate
+.SBMI\Scripts\activate
 ```
 
 4. Use this command to install the required python packages
