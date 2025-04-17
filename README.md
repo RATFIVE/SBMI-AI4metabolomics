@@ -2,7 +2,7 @@
 
 Analyzing an organism's metabolism is crucial for understanding and monitoring diseases and treatments. Magnetic resonance imaging (MRI) is the only technique to measure the metabolism noninvasively, in vivo, and in vitro.
 
-With this applications you can detect and measure the abundance of prespecified substances of NMR spectra. 
+With this application you can detect and measure the abundance of prespecified substances of NMR spectra. 
 
 
 
